@@ -1,5 +1,7 @@
 import React from 'react';
-import { Form, Input, Button } from 'antd';
+import { Form, Input, Button, message } from 'antd';
+import { API_ROOT } from '../constants';
+import { Link } from 'react-router-dom';
 
 const FormItem = Form.Item;
 
@@ -14,7 +16,28 @@ class RegistrationForm extends React.Component {
         e.preventDefault();
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values);
+                fetch(`${API_ROOT}/signup`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        username: values.username,
+                        password: values.password,
+                    })
+                }).then((response) => {
+                    if (response.ok) {
+                        return response;
+                    }
+                    throw new Error(response.statusText);
+                })
+                    .then((response) => response.text())
+                    .then((response) => {
+                        console.log(response);
+                        message.success('Registration Succeed');
+                        this.props.history.push('/login');
+                    })
+                    .catch((e) => {
+                        console.log(e)
+                        message.error('Registration Failed');
+                    });
             }
         });
     }
@@ -68,7 +91,7 @@ class RegistrationForm extends React.Component {
         };
 
         return (
-            <Form onSubmit={this.handleSubmit} className = 'register'>
+            <Form onSubmit={this.handleSubmit} className="register">
                 <FormItem
                     {...formItemLayout}
                     label="Username"
@@ -109,6 +132,7 @@ class RegistrationForm extends React.Component {
                 </FormItem>
                 <FormItem {...tailFormItemLayout}>
                     <Button type="primary" htmlType="submit">Register</Button>
+                    <p>I already have an account, go back to <Link to="/Login">login</Link></p>
                 </FormItem>
             </Form>
         );
